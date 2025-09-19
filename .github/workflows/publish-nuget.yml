@@ -49,30 +49,37 @@ jobs:
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Using version: $VERSION"
 
+    - name: Update package versions in csproj files
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        VERSION="${{ steps.get-version.outputs.version }}"
+        # Update version in all csproj files
+        find src -name "*.csproj" -exec sed -i "s/<Version>.*<\/Version>/<Version>$VERSION<\/Version>/g" {} \;
+
     - name: Pack Abstraction package
       run: |
         cd src/MasLazu.AspNet.Authentication.Password.Abstraction
-        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs
 
     - name: Pack Domain package
       run: |
         cd src/MasLazu.AspNet.Authentication.Password.Domain
-        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs
 
     - name: Pack Application package
       run: |
         cd src/MasLazu.AspNet.Authentication.Password
-        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs
 
     - name: Pack EfCore package
       run: |
         cd src/MasLazu.AspNet.Authentication.Password.EfCore
-        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs
 
     - name: Pack Endpoint package
       run: |
         cd src/MasLazu.AspNet.Authentication.Password.Endpoint
-        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs
 
     - name: List created packages
       run: ls -la ${{ github.workspace }}/nupkgs/
