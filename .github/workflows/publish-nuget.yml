@@ -1,0 +1,147 @@
+name: Publish to NuGet
+
+on:
+  release:
+    types: [published, prereleased]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version to publish'
+        required: true
+        default: '1.0.0-preview.1'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  CONFIGURATION: 'Release'
+
+jobs:
+  publish:
+    name: Publish NuGet Packages
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
+
+    - name: Get version from release or input
+      id: get-version
+      run: |
+        if [ "${{ github.event_name }}" = "release" ]; then
+          # Remove 'v' prefix from tag name
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+        else
+          VERSION="${{ github.event.inputs.version }}"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Using version: $VERSION"
+
+    - name: Pack Abstraction package
+      run: |
+        cd src/MasLazu.AspNet.Authentication.Password.Abstraction
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+
+    - name: Pack Domain package
+      run: |
+        cd src/MasLazu.AspNet.Authentication.Password.Domain
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+
+    - name: Pack Application package
+      run: |
+        cd src/MasLazu.AspNet.Authentication.Password
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+
+    - name: Pack EfCore package
+      run: |
+        cd src/MasLazu.AspNet.Authentication.Password.EfCore
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+
+    - name: Pack Endpoint package
+      run: |
+        cd src/MasLazu.AspNet.Authentication.Password.Endpoint
+        dotnet pack --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ github.workspace }}/nupkgs /p:PackageVersion=${{ steps.get-version.outputs.version }}
+
+    - name: List created packages
+      run: ls -la ${{ github.workspace }}/nupkgs/
+
+    - name: Publish Abstraction package to NuGet
+      run: dotnet nuget push ${{ github.workspace }}/nupkgs/MasLazu.AspNet.Authentication.Password.Abstraction.${{ steps.get-version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish Domain package to NuGet
+      run: dotnet nuget push ${{ github.workspace }}/nupkgs/MasLazu.AspNet.Authentication.Password.Domain.${{ steps.get-version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish Application package to NuGet
+      run: dotnet nuget push ${{ github.workspace }}/nupkgs/MasLazu.AspNet.Authentication.Password.${{ steps.get-version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish EfCore package to NuGet
+      run: dotnet nuget push ${{ github.workspace }}/nupkgs/MasLazu.AspNet.Authentication.Password.EfCore.${{ steps.get-version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish Endpoint package to NuGet
+      run: dotnet nuget push ${{ github.workspace }}/nupkgs/MasLazu.AspNet.Authentication.Password.Endpoint.${{ steps.get-version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Create GitHub release notes
+      if: github.event_name == 'workflow_dispatch'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const version = '${{ steps.get-version.outputs.version }}';
+          const packages = [
+            'MasLazu.AspNet.Authentication.Password.Abstraction',
+            'MasLazu.AspNet.Authentication.Password.Domain',
+            'MasLazu.AspNet.Authentication.Password',
+            'MasLazu.AspNet.Authentication.Password.EfCore',
+            'MasLazu.AspNet.Authentication.Password.Endpoint'
+          ];
+
+          let body = `## 🚀 Release ${version}\n\n`;
+          body += '### 📦 Published Packages\n\n';
+          packages.forEach(pkg => {
+            body += `- \`${pkg}\` v${version}\n`;
+          });
+          body += '\n### 🔗 Installation\n\n';
+          body += '```bash\n';
+          packages.forEach(pkg => {
+            body += `dotnet add package ${pkg} --version ${version}\n`;
+          });
+          body += '```\n\n';
+          body += '### 📋 Changes\n\n';
+          body += 'See the changelog for details about this release.\n\n';
+          body += '### 🏗️ Architecture\n\n';
+          body += 'This release includes:\n';
+          body += '- **Abstraction Layer**: Core interfaces and contracts\n';
+          body += '- **Domain Layer**: Business entities and rules\n';
+          body += '- **Application Layer**: Service implementations\n';
+          body += '- **Infrastructure Layer**: EF Core data access\n';
+          body += '- **Presentation Layer**: REST API endpoints\n\n';
+          body += '### ✨ Key Features\n\n';
+          body += '- BCrypt password hashing with configurable policies\n';
+          body += '- Email verification workflows\n';
+          body += '- CQRS-ready architecture\n';
+          body += '- Comprehensive input validation\n';
+          body += '- JWT-based authentication\n';
+          body += '- Clean Architecture implementation\n\n';
+          body += '---\n\n';
+          body += '*This release was automatically published by GitHub Actions.*';
+
+          github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: `v${version}`,
+            name: `Release ${version}`,
+            body: body,
+            draft: false,
+            prerelease: version.includes('beta') || version.includes('alpha') || version.includes('rc') || version.includes('preview')
+          });
