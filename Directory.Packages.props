@@ -22,5 +22,4 @@
     <PackageVersion Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageVersion Include="FastEndpoints" Version="7.0.1" />
   </ItemGroup>
-</Project></content>
-<parameter name="filePath">/home/mfaziz/projects/cs/MasLazu.AspNet.Authentication.Password/Directory.Packages.props
+</Project>
