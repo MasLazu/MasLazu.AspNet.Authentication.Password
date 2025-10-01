@@ -20,7 +20,7 @@ public class ChangePasswordEndpoint : BaseEndpointWithoutResponse<ChangePassword
 
     public override async Task HandleAsync(ChangePasswordRequest req, CancellationToken ct)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
         {
             throw new UnauthorizedException("User is not authenticated");
