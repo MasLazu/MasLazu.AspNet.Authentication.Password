@@ -23,7 +23,7 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
     private readonly IAuthService _authService;
     private readonly IUserLoginMethodService _userLoginMethodService;
     private readonly PasswordLoginMethodConfiguration _passwordConfig;
-    private readonly AbstractValidator<PasswordRegisterRequest> _registerValidator;
+    private readonly IValidator<PasswordRegisterRequest> _registerValidator;
 
     public UserPasswordLoginService(
         IRepository<UserPasswordLogin> repository,
@@ -36,7 +36,7 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
         IAuthService authService,
         IUserLoginMethodService userLoginMethodService,
         IOptions<PasswordLoginMethodConfiguration> passwordConfig,
-        AbstractValidator<PasswordRegisterRequest> registerValidator,
+        IValidator<PasswordRegisterRequest> registerValidator,
         IValidator<CreateUserPasswordLoginRequest>? createValidator = null,
         IValidator<UpdateUserPasswordLoginRequest>? updateValidator = null)
         : base(repository, readRepository, unitOfWork, propertyMap, paginationValidator, cursorPaginationValidator, createValidator, updateValidator)
