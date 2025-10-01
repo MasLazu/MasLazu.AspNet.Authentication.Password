@@ -22,8 +22,8 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
     private readonly IUserService _userService;
     private readonly IAuthService _authService;
     private readonly IUserLoginMethodService _userLoginMethodService;
-    private readonly IVerificationService _verificationService;
     private readonly PasswordLoginMethodConfiguration _passwordConfig;
+    private readonly AbstractValidator<PasswordRegisterRequest> _registerValidator;
 
     public UserPasswordLoginService(
         IRepository<UserPasswordLogin> repository,
@@ -35,8 +35,8 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
         IUserService userService,
         IAuthService authService,
         IUserLoginMethodService userLoginMethodService,
-        IVerificationService verificationService,
         IOptions<PasswordLoginMethodConfiguration> passwordConfig,
+        AbstractValidator<PasswordRegisterRequest> registerValidator,
         IValidator<CreateUserPasswordLoginRequest>? createValidator = null,
         IValidator<UpdateUserPasswordLoginRequest>? updateValidator = null)
         : base(repository, readRepository, unitOfWork, propertyMap, paginationValidator, cursorPaginationValidator, createValidator, updateValidator)
@@ -44,8 +44,8 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
         _userService = userService;
         _authService = authService;
         _userLoginMethodService = userLoginMethodService;
-        _verificationService = verificationService;
         _passwordConfig = passwordConfig.Value;
+        _registerValidator = registerValidator;
     }
 
     public async Task<PasswordLoginResponse> LoginAsync(PasswordLoginRequest request, CancellationToken ct)
@@ -70,6 +70,8 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
 
     public async Task RegisterAsync(PasswordRegisterRequest request, CancellationToken ct)
     {
+        await ValidateAsync(request, _registerValidator, ct);
+
         if (await _userService.IsEmailTakenAsync(request.Email, ct))
         {
             throw new BadRequestException("Email is already taken.");
