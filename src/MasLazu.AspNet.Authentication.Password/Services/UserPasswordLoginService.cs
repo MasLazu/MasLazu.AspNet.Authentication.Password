@@ -11,6 +11,7 @@ using MasLazu.AspNet.Authentication.Password.Configurations;
 using MasLazu.AspNet.Authentication.Password.Constants;
 using MasLazu.AspNet.Authentication.Password.Utils;
 using MasLazu.AspNet.Authentication.Password.Domain.Entities;
+using MasLazu.AspNet.Authentication.Password.Exceptions;
 using MasLazu.AspNet.Framework.Application.Exceptions;
 using MasLazu.AspNet.Framework.Application.Interfaces;
 using MasLazu.AspNet.Framework.Application.Services;
@@ -51,18 +52,18 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
     public async Task<PasswordLoginResponse> LoginAsync(PasswordLoginRequest request, CancellationToken ct)
     {
         UserDto user = await _userService.GetByUsernameOrEmailAsync(request.Identifier, ct) ??
-            throw new UnauthorizedException("Invalid username/email or password.");
+            throw new InvalidCredentialsException(request.Identifier);
 
         UserPasswordLogin? userPasswordLogin = await ReadRepository.FirstOrDefaultAsync(upl => upl.UserId == user.Id, ct);
 
         if (userPasswordLogin == null || !PasswordHasher.VerifyPassword(userPasswordLogin.PasswordHash, request.Password))
         {
-            throw new UnauthorizedException("Invalid username/email or password.");
+            throw new InvalidCredentialsException(request.Identifier);
         }
 
         if (_passwordConfig.RequireVerification && !userPasswordLogin.IsVerified)
         {
-            throw new UnauthorizedException("Account not verified. Please verify your account before logging in.");
+            throw new AccountNotVerifiedException(user.Email);
         }
 
         return (await _authService.LoginAsync(userPasswordLogin.UserLoginMethodId, ct)).Adapt<PasswordLoginResponse>();
@@ -74,12 +75,12 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
 
         if (await _userService.IsEmailTakenAsync(request.Email, ct))
         {
-            throw new BadRequestException("Email is already taken.");
+            throw new EmailAlreadyTakenException(request.Email);
         }
 
         if (await _userService.IsUsernameTakenAsync(request.Username, ct))
         {
-            throw new BadRequestException("Username is already taken.");
+            throw new UsernameAlreadyTakenException(request.Username);
         }
 
         var createUserRequest = new CreateUserRequest(
@@ -116,11 +117,11 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
     public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct)
     {
         UserPasswordLogin userPasswordLogin = await ReadRepository.FirstOrDefaultAsync(upl => upl.UserId == userId, ct) ??
-            throw new NotFoundException($"No password login found for user with ID {userId}");
+            throw new PasswordLoginNotFoundException(userId);
 
         if (!PasswordHasher.VerifyPassword(userPasswordLogin.PasswordHash, request.CurrentPassword))
         {
-            throw new UnauthorizedException("Current password is incorrect.");
+            throw new InvalidCurrentPasswordException();
         }
 
         userPasswordLogin.PasswordHash = PasswordHasher.HashPassword(request.NewPassword);
