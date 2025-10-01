@@ -6,14 +6,14 @@
 
   <ItemGroup>
     <!-- MasLazu Framework Packages -->
-    <PackageVersion Include="MasLazu.AspNet.Framework.Application" Version="1.0.0-preview.10" />
-    <PackageVersion Include="MasLazu.AspNet.Framework.Domain" Version="1.0.0-preview.10" />
-    <PackageVersion Include="MasLazu.AspNet.Framework.EfCore" Version="1.0.0-preview.10" />
-    <PackageVersion Include="MasLazu.AspNet.Framework.Endpoint" Version="1.0.0-preview.10" />
+    <PackageVersion Include="MasLazu.AspNet.Framework.Application" Version="1.0.0-preview.12" />
+    <PackageVersion Include="MasLazu.AspNet.Framework.Domain" Version="1.0.0-preview.12" />
+    <PackageVersion Include="MasLazu.AspNet.Framework.EfCore" Version="1.0.0-preview.12" />
+    <PackageVersion Include="MasLazu.AspNet.Framework.Endpoint" Version="1.0.0-preview.12" />
 
     <!-- Authentication Packages -->
-    <PackageVersion Include="MasLazu.AspNet.Authentication.Core.Abstraction" Version="1.0.0-preview.3" />
-    <PackageVersion Include="MasLazu.AspNet.Verification.Abstraction" Version="1.0.0-preview.1" />
+    <PackageVersion Include="MasLazu.AspNet.Authentication.Core.Abstraction" Version="1.0.0-preview.7" />
+    <PackageVersion Include="MasLazu.AspNet.Verification.Abstraction" Version="1.0.0-preview.5" />
 
     <!-- Microsoft Packages -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />

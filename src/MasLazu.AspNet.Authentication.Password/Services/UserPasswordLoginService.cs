@@ -90,14 +90,14 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
             GenderCode: null
         );
 
-        UserDto userDto = await _userService.CreateAsync(Guid.Empty, createUserRequest, ct);
+        UserDto userDto = await _userService.CreateAsync(Guid.Empty, createUserRequest, false, ct);
 
         var createLoginMethodRequest = new CreateUserLoginMethodRequest(
             UserId: userDto.Id,
             LoginMethodCode: PasswordConstants.LoginMethodCode
         );
 
-        UserLoginMethodDto userLoginMethodDto = await _userLoginMethodService.CreateAsync(Guid.Empty, createLoginMethodRequest, ct);
+        UserLoginMethodDto userLoginMethodDto = await _userLoginMethodService.CreateAsync(Guid.Empty, createLoginMethodRequest, false, ct);
 
         var userPasswordLogin = new UserPasswordLogin
         {
