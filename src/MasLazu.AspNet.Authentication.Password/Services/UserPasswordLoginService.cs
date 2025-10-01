@@ -109,14 +109,12 @@ public class UserPasswordLoginService : CrudService<UserPasswordLogin, UserPassw
 
         await Repository.AddAsync(userPasswordLogin, ct);
         await UnitOfWork.SaveChangesAsync(ct);
-
-        await _userService.SendEmailVerificationAsync(userDto.Email!, ct);
     }
 
     public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct)
     {
         UserPasswordLogin userPasswordLogin = await ReadRepository.FirstOrDefaultAsync(upl => upl.UserId == userId, ct) ??
-            throw new NotFoundException(nameof(UserPasswordLogin), $"No password login found for user with ID {userId}");
+            throw new NotFoundException($"No password login found for user with ID {userId}");
 
         if (!PasswordHasher.VerifyPassword(userPasswordLogin.PasswordHash, request.CurrentPassword))
         {
