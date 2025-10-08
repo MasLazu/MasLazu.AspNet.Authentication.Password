@@ -8,7 +8,7 @@ public class PasswordLoginNotFoundException : AppException
     public PasswordLoginNotFoundException(Guid userId)
         : base(
             message: "No password login found for the specified user.",
-            errorCode: "PASSWORD_AUTH_LOGIN_NOT_FOUND",
+            errorCode: "password_auth_login_not_found",
             statusCode: HttpStatusCode.NotFound,
             details: new { UserId = userId })
     {

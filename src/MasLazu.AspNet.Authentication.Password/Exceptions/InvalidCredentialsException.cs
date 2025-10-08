@@ -8,7 +8,7 @@ public class InvalidCredentialsException : AppException
     public InvalidCredentialsException(string? identifier = null)
         : base(
             message: "Invalid username/email or password.",
-            errorCode: "PASSWORD_AUTH_INVALID_CREDENTIALS",
+            errorCode: "password_auth_invalid_credentials",
             statusCode: HttpStatusCode.Unauthorized,
             details: identifier != null ? new { Identifier = identifier } : null)
     {

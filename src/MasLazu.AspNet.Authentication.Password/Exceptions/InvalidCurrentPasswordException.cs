@@ -8,7 +8,7 @@ public class InvalidCurrentPasswordException : AppException
     public InvalidCurrentPasswordException()
         : base(
             message: "Current password is incorrect.",
-            errorCode: "PASSWORD_AUTH_INVALID_CURRENT_PASSWORD",
+            errorCode: "password_auth_invalid_current_password",
             statusCode: HttpStatusCode.Unauthorized)
     {
     }

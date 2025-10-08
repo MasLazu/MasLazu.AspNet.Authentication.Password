@@ -8,7 +8,7 @@ public class UsernameAlreadyTakenException : AppException
     public UsernameAlreadyTakenException(string username)
         : base(
             message: "Username is already taken.",
-            errorCode: "PASSWORD_AUTH_USERNAME_TAKEN",
+            errorCode: "password_auth_username_taken",
             statusCode: HttpStatusCode.Conflict,
             details: new { Username = username })
     {
